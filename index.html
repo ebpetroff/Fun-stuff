@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  background: #fcfcfa;
+}
+
+.stroke {
+  fill: none;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+.fill {
+  fill: #fff;
+}
+
+.graticule {
+  fill: none;
+  stroke: #777;
+  stroke-width: .5px;
+  stroke-opacity: .5;
+}
+
+.land {
+  fill: #bbb;
+}
+
+.boundary {
+  fill: none;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+.points circle {
+  fill: #fff;
+  stroke: black;
+  stroke-width: 1px;
+}
+
+.points text {
+  font: 11px sans-serif;
+  text-anchor: middle;
+  text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+}
+
+.route {
+  fill: none;
+  stroke: black;
+  stroke-width: 1px;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var width = 602,
+    height = 357;
+
+var places = {
+  ADL: [+138.5310059, -34.9449997], <!-- Adelaide -->
+  AKL: [+174.791667, -37.008056], <!-- Auckland -->
+  AMS: [+4.763889, +52.308613],  <!-- Amsterdam -->
+  ASP: [+133.9019928, -23.8066998], <!-- Alice Springs -->
+  AUH: [+54.3667, +24.4667], <!-- Abu Dhabi -->
+  AYQ: [+130.9759979, -25.1861], <!-- Ayers Rock -->
+  BNE: [+153.1170044, -27.3841991], <!-- Brisbane -->
+  CBR: [+149.1950073, -35.3069], <!-- Canberra -->
+  CDG: [+2.550000, +49.012779],  <!-- Paris -->
+  DCA: [-77.037722, +38.852083], <!-- Washington DC -->
+  DFW: [-97.037997, +32.896828], <!-- Dallas -->
+  DXB: [+55.2708, +25.2048], <!-- Dubai -->
+  FRA: [+8.543125, +50.026421], <!-- Frankfurt -->
+  HKG: [+114.1940002, +22.3288002], <!-- Hong Kong -->
+  IAH: [-95.3414, +29.9844], <!-- Houston -->
+  LAX: [-118.408075, +33.942536], <!-- LA -->
+  LHR: [-0.461389, +51.477500], <!-- London -->
+  LSC: [-71.1994, -29.9161], <!-- La Serena -->
+  MEL: [+144.843333, -37.673333], <!-- Melbourne -->
+  PDX: [-122.6819, +45.5200], <!-- Portland -->
+  PEK: [+116.5849991, +40.080101], <!-- Beijing -->
+  PER: [+115.9670029, -31.9403], <!-- Perth -->
+  PHX: [-112.011583, +33.434278], <!-- Phoenix -->
+  PKS: [+148.2392, -33.1314], <!-- Parkes -->
+  ROM: [+12.5000, +41.9000], <!-- Rome -->
+  SAT: [-98.4698029, +29.5337009], <!-- San Antonio -->
+  SCL: [-70.7856, -33.3928], <!-- Santiago -->
+  SFO: [-122.374889, +37.618972], <!-- San Francisco -->
+  SIN: [+103.9894, +1.3592], <!-- Singapore -->
+  SJC: [-121.9290009, +37.3625984], <!-- San Jose -->
+  SMF: [-121.5910034, +38.6954002], <!-- Sacramento -->
+  SYD: [+151.177222, -33.946111], <!-- Sydney -->
+};
+
+var route = {
+  type: "LineString",
+  coordinates: [
+    places.PDX,
+    places.LAX,
+    places.LAX,
+    places.MEL,
+    places.MEL,
+    places.HKG,
+    places.HKG,
+    places.PEK,
+    places.PEK,
+    places.HKG,
+    places.HKG,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.PKS,
+    places.PKS,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.PKS,
+    places.PKS,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.LAX,
+    places.LAX,
+    places.PDX,
+    places.PDX,
+    places.LAX,
+    places.LAX,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.PKS,
+    places.PKS,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.PKS,
+    places.PKS,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.AUH,
+    places.AUH,
+    places.FRA,
+    places.AMS,
+    places.LHR,
+    places.LHR,
+    places.DFW,
+    places.DFW,
+    places.PDX,
+    places.PDX,
+    places.SJC,
+    places.SJC,
+    places.PDX,
+    places.PDX,
+    places.SAT,
+    places.SAT,
+    places.DFW,
+    places.DFW,
+    places.CDG,
+    places.FRA,
+    places.AUH,
+    places.AUH,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.PER,
+    places.PER,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.SFO,
+    places.SFO,
+    places.PDX,
+    places.PDX,
+    places.SMF,
+    places.SMF,
+    places.PDX,
+    places.PDX,
+    places.PHX,
+    places.PHX,
+    places.DCA,
+    places.DCA,
+    places.PHX,
+    places.PHX,
+    places.PDX,
+    places.PDX,
+    places.SFO,
+    places.SFO,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.AKL,
+    places.AKL,
+    places.SFO,
+    places.SMF,
+    places.PDX,
+    places.PDX,
+    places.SFO,
+    places.SFO,
+    places.AKL,
+    places.AKL,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.CBR,
+    places.CBR,
+    places.MEL,
+    places.MEL,
+    places.ASP,
+    places.ASP,
+    places.AYQ,
+    places.AYQ,
+    places.ASP,
+    places.ASP,
+    places.MEL,
+    places.MEL,
+    places.LAX,
+    places.LAX,
+    places.DCA,
+    places.DCA,
+    places.DFW,
+    places.DFW,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.CBR,
+    places.CBR,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.ADL,
+    places.ADL,
+    places.BNE,
+    places.BNE,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.BNE,
+    places.BNE,
+    places.LAX,
+    places.LAX,
+    places.PDX,
+    places.PDX,
+    places.SMF,
+    places.SMF,
+    places.PDX,
+    places.PDX,
+    places.LAX,
+    places.LAX,
+    places.BNE,
+    places.BNE,
+    places.MEL,
+    places.MEL,
+    places.LAX,
+    places.LAX,
+    places.IAH,
+    places.IAH,
+    places.SCL,
+    places.SCL,
+    places.LSC,
+    places.LSC,
+    places.SCL,
+    places.SCL,
+    places.IAH,
+    places.IAH,
+    places.SFO,
+    places.SFO,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.SYD,
+    places.SYD,
+    places.PKS,
+    places.PKS,
+    places.SYD,
+    places.SYD,
+    places.MEL,
+    places.MEL,
+    places.DXB,
+    places.DXB,
+    places.AMS,
+    places.AMS,
+    places.DXB,
+    places.DXB,
+    places.MEL,
+    places.MEL,
+    places.DXB,
+    places.DXB,
+    places.LHR,
+    places.CDG,
+    places.DXB,
+    places.DXB,
+    places.MEL,
+    places.MEL,
+    places.SIN,
+    places.SIN,
+    places.ROM,
+    places.ROM,
+    places.SIN,
+    places.SIN,
+    places.MEL
+  ]
+};
+
+var projection = d3.geo.kavrayskiy7()
+    .scale(120)
+    .rotate([-140, 0])
+    .translate([width / 2, height / 2])
+    .precision(.1);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var graticule = d3.geo.graticule();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.append("defs").append("path")
+    .datum({type: "Sphere"})
+    .attr("id", "sphere")
+    .attr("d", path);
+
+svg.append("use")
+    .attr("class", "stroke")
+    .attr("xlink:href", "#sphere");
+
+svg.append("use")
+    .attr("class", "fill")
+    .attr("xlink:href", "#sphere");
+
+svg.append("path")
+    .datum(graticule)
+    .attr("class", "graticule")
+    .attr("d", path);
+
+svg.append("path")
+    .datum(route)
+    .attr("class", "route")
+    .attr("d", path);
+
+var point = svg.append("g")
+    .attr("class", "points")
+  .selectAll("g")
+    .data(d3.entries(places))
+  .enter().append("g")
+    .attr("transform", function(d) { return "translate(" + projection(d.value) + ")"; });
+
+point.append("circle")
+    .attr("r", 1.5);
+
+// point.append("text")
+//     .attr("y", 10)
+//     .attr("dy", ".71em")
+//     .text(function(d) { return d.key; });
+
+d3.json("/mbostock/raw/4090846/world-50m.json", function(error, world) {
+  svg.insert("path", ".graticule")
+      .datum(topojson.feature(world, world.objects.land))
+      .attr("class", "land")
+      .attr("d", path);
+
+  svg.insert("path", ".graticule")
+      .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+      .attr("class", "boundary")
+      .attr("d", path);
+});
+
+d3.select(self.frameElement).style("height", height + "px");
+
+</script>
